@@ -1,0 +1,1 @@
+{"name":"finlife","private":true,"version":"0.1.0","description":"FinLife - gestão financeira pessoal e compartilhada","scripts":{"typecheck":"tsc --noEmit"}}
