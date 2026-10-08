@@ -1,0 +1,1 @@
+{"expo":{"name":"FinLife","slug":"finlife","version":"0.1.0","orientation":"portrait","scheme":"finlife","userInterfaceStyle":"automatic","plugins":["expo-router"],"ios":{"supportsTablet":true},"android":{"package":"com.finlife.app"}}}
