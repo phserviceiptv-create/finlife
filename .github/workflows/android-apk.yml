@@ -1,0 +1,46 @@
+name: Build FinLife Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  android-apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/mobile/package.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Expo prebuild
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: https://zjeclsozvjymuzwyhvqj.supabase.co
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_WyjaTHvDUwGPCwHaXcdApw_xlssm0TE
+        run: npx expo prebuild --platform android --non-interactive
+
+      - name: Build release APK
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: https://zjeclsozvjymuzwyhvqj.supabase.co
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_WyjaTHvDUwGPCwHaXcdApw_xlssm0TE
+        run: chmod +x android/gradlew && cd android && ./gradlew assembleRelease --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: finlife-android-apk
+          path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 7
