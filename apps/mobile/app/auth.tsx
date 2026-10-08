@@ -1,11 +1,2 @@
-import { View, Text, TextInput, Pressable, Alert } from "react-native";
-import { useState } from "react";
-
-export default function Auth() {
- const [email,setEmail]=useState("");
- return <View style={{flex:1,padding:24,justifyContent:"center",gap:14}}>
-  <Text style={{fontSize:28,fontWeight:"800"}}>Acesse sua conta</Text>
-  <TextInput autoCapitalize="none" keyboardType="email-address" placeholder="seu@email.com" value={email} onChangeText={setEmail} style={{borderWidth:1,borderRadius:12,padding:14}}/>
-  <Pressable onPress={()=>Alert.alert("FinLife","A autenticação Supabase será conectada nesta etapa.")} style={{padding:16,borderRadius:14,backgroundColor:"#111"}}><Text style={{color:"#fff",textAlign:"center",fontWeight:"700"}}>Continuar</Text></Pressable>
- </View>;
-}
+import { View, Text, TextInput, Pressable, Alert } from "react-native"; import { useState } from "react"; import { supabase } from "../lib/supabase"; import { router } from "expo-router";
+export default function Auth(){const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [loading,setLoading]=useState(false);async function login(){if(!email||!password)return Alert.alert("FinLife","Informe e-mail e senha.");setLoading(true);const {error}=await supabase.auth.signInWithPassword({email,password});setLoading(false);if(error)return Alert.alert("Não foi possível entrar",error.message);router.replace("/dashboard")}async function signup(){if(!email||!password)return Alert.alert("FinLife","Informe e-mail e senha.");setLoading(true);const {error}=await supabase.auth.signUp({email,password});setLoading(false);if(error)return Alert.alert("Não foi possível criar a conta",error.message);Alert.alert("FinLife","Conta criada. Confirme o e-mail se essa opção estiver ativa.");}return <View style={{flex:1,padding:24,justifyContent:"center",gap:14}}><Text style={{fontSize:28,fontWeight:"800"}}>Acesse sua conta</Text><TextInput autoCapitalize="none" keyboardType="email-address" placeholder="seu@email.com" value={email} onChangeText={setEmail} style={{borderWidth:1,borderRadius:12,padding:14}}/><TextInput secureTextEntry placeholder="Senha" value={password} onChangeText={setPassword} style={{borderWidth:1,borderRadius:12,padding:14}}/><Pressable disabled={loading} onPress={login} style={{padding:16,borderRadius:14,backgroundColor:"#111"}}><Text style={{color:"#fff",textAlign:"center",fontWeight:"700"}}>{loading?"Entrando…":"Entrar"}</Text></Pressable><Pressable onPress={signup} style={{padding:14}}><Text style={{textAlign:"center",fontWeight:"700"}}>Criar conta</Text></Pressable></View>}
