@@ -5,9 +5,14 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   android-apk:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     defaults:
       run:
         working-directory: apps/mobile
@@ -22,25 +27,42 @@ jobs:
           cache: npm
           cache-dependency-path: apps/mobile/package.json
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Install dependencies
         run: npm install
+
+      - name: Check Expo configuration
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: https://zjeclsozvjymuzwyhvqj.supabase.co
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_WyjaTHvDUwGPCwHaXcdApw_xlssm0TE
+        run: npx expo config --type public
 
       - name: Expo prebuild
         env:
           EXPO_PUBLIC_SUPABASE_URL: https://zjeclsozvjymuzwyhvqj.supabase.co
           EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_WyjaTHvDUwGPCwHaXcdApw_xlssm0TE
-        run: npx expo prebuild --platform android --non-interactive
+        run: npx expo prebuild --platform android --non-interactive --clean
 
       - name: Build release APK
         env:
           EXPO_PUBLIC_SUPABASE_URL: https://zjeclsozvjymuzwyhvqj.supabase.co
           EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_WyjaTHvDUwGPCwHaXcdApw_xlssm0TE
-        run: chmod +x android/gradlew && cd android && ./gradlew assembleRelease --no-daemon
+          GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: finlife-android-apk
           path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 14
